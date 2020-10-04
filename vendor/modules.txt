@@ -1,0 +1,26 @@
+# github.com/badoux/checkmail v1.2.1
+## explicit
+github.com/badoux/checkmail
+# github.com/dgrijalva/jwt-go v3.2.0+incompatible
+## explicit
+github.com/dgrijalva/jwt-go
+# github.com/go-sql-driver/mysql v1.5.0
+github.com/go-sql-driver/mysql
+# github.com/gorilla/mux v1.8.0
+## explicit
+github.com/gorilla/mux
+# github.com/jinzhu/gorm v1.9.16
+## explicit
+github.com/jinzhu/gorm
+github.com/jinzhu/gorm/dialects/mysql
+# github.com/jinzhu/inflection v1.0.0
+github.com/jinzhu/inflection
+# github.com/joho/godotenv v1.3.0
+## explicit
+github.com/joho/godotenv
+# golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
+## explicit
+golang.org/x/crypto/bcrypt
+golang.org/x/crypto/blowfish
+# gopkg.in/go-playground/assert.v1 v1.2.1
+## explicit
