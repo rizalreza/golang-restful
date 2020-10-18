@@ -116,9 +116,16 @@ func (server *Server) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	// Start processing the request data
 	postUpdate := models.Post{}
 
+	cid, err := strconv.Atoi(r.FormValue("category_id"))
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
 	// Initial data from request form-data
 	postUpdate.Title = r.FormValue("title")
 	postUpdate.AuthorID = uid
+	postUpdate.CategoryID = uint32(cid)
 	postUpdate.Content = r.FormValue("content")
 
 	//Also check if the request user id is equal to the one gotten from token

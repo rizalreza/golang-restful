@@ -18,6 +18,13 @@ func (s *Server) initializeRoutes() {
 	s.Router.HandleFunc("/users/{id}", middlewares.SetMiddlewareJSON(middlewares.SetMiddlewareAuthentication(s.UpdateUser))).Methods("PUT")
 	s.Router.HandleFunc("/users/{id}", middlewares.SetMiddlewareAuthentication(s.DeleteUser)).Methods("DELETE")
 
+	//Category routes
+	s.Router.HandleFunc("/category", middlewares.SetMiddlewareJSON(s.CreateCategory)).Methods("POST")
+	s.Router.HandleFunc("/category", middlewares.SetMiddlewareJSON(s.GetCategories)).Methods("GET")
+	s.Router.HandleFunc("/category/{id}", middlewares.SetMiddlewareJSON(s.GetCategoryById)).Methods("GET")
+	s.Router.HandleFunc("/category/{id}", middlewares.SetMiddlewareJSON(middlewares.SetMiddlewareAuthentication(s.UpdateCategory))).Methods("PUT")
+	s.Router.HandleFunc("/category/{id}", middlewares.SetMiddlewareAuthentication(s.DeleteCategory)).Methods("DELETE")
+
 	//Posts routes
 	s.Router.HandleFunc("/posts", middlewares.SetMiddlewareJSON(s.CreatePost)).Methods("POST")
 	s.Router.HandleFunc("/posts", middlewares.SetMiddlewareJSON(s.GetPosts)).Methods("GET")
