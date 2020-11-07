@@ -1,10 +1,8 @@
 package controllers
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -16,19 +14,14 @@ import (
 )
 
 func (server *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		responses.ERROR(w, http.StatusUnprocessableEntity, err)
-	}
 	user := models.User{}
-	err = json.Unmarshal(body, &user)
-	if err != nil {
-		responses.ERROR(w, http.StatusUnprocessableEntity, err)
-		return
-	}
+
+	user.Username = r.FormValue("username")
+	user.Email = r.FormValue("email")
+	user.Password = r.FormValue("password")
 
 	user.Prepare()
-	err = user.Validate("")
+	err := user.Validate("")
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
@@ -78,17 +71,8 @@ func (server *Server) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		responses.ERROR(w, http.StatusUnprocessableEntity, err)
-		return
-	}
+
 	user := models.User{}
-	err = json.Unmarshal(body, &user)
-	if err != nil {
-		responses.ERROR(w, http.StatusUnprocessableEntity, err)
-		return
-	}
 
 	tokenID, err := auth.ExtractTokenID(r)
 	if err != nil {
@@ -99,6 +83,11 @@ func (server *Server) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusUnauthorized, errors.New(http.StatusText(http.StatusUnauthorized)))
 		return
 	}
+
+	// Initial data from request form-data
+	user.Username = r.FormValue("username")
+	user.Email = r.FormValue("email")
+	user.Password = r.FormValue("password")
 
 	user.Prepare()
 	err = user.Validate("update")
@@ -126,7 +115,7 @@ func (server *Server) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	tokenID, err := auth.ExtractTokenID(r)
 	if err != nil {
-		responses.ERROR(w, http.StatusUnauthorized, errors.New("Unaothorized"))
+		responses.ERROR(w, http.StatusUnauthorized, errors.New("Unauthorized"))
 		return
 	}
 	if tokenID != 0 && tokenID != uint32(uid) {

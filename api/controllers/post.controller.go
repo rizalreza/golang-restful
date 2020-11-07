@@ -15,15 +15,24 @@ import (
 
 func (server *Server) CreatePost(w http.ResponseWriter, r *http.Request) {
 	post := models.Post{}
+	category := models.Category{}
 
 	authorid, err := strconv.Atoi(r.FormValue("author_id"))
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
+
+	categoryid, err := strconv.Atoi(r.FormValue("category_id"))
+	if err != nil {
+		responses.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
 	post.Title = r.FormValue("title")
 	post.AuthorID = uint32(authorid)
 	post.Content = r.FormValue("content")
+	post.CategoryID = uint32(categoryid)
 
 	post.Prepare()
 
@@ -43,6 +52,14 @@ func (server *Server) CreatePost(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusUnauthorized, errors.New(http.StatusText(http.StatusUnauthorized)))
 		return
 	}
+
+	// Check if category_id is valid data
+	err = server.DB.Debug().Model(models.Category{}).Where("id = ?", categoryid).Take(&category).Error
+	if err != nil {
+		responses.ERROR(w, http.StatusNotFound, errors.New("Category ID not found on our data"))
+		return
+	}
+
 	postCreated, err := post.SavePost(server.DB)
 	if err != nil {
 		formattedError := formaterror.FormatError(err.Error())
@@ -119,6 +136,13 @@ func (server *Server) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	cid, err := strconv.Atoi(r.FormValue("category_id"))
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	// Check if category_id is valid data
+	err = server.DB.Debug().Model(models.Category{}).Where("id = ?", cid).Take(&models.Category{}).Error
+	if err != nil {
+		responses.ERROR(w, http.StatusNotFound, errors.New("Category ID not found on our data"))
 		return
 	}
 

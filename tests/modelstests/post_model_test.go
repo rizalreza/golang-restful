@@ -11,11 +11,11 @@ import (
 
 func TestFindAllPosts(t *testing.T) {
 
-	err := refreshUserAndPostTable()
+	err := refreshUserCategoryAndPostTable()
 	if err != nil {
 		log.Fatalf("Error refreshing user and post table %v\n", err)
 	}
-	_, _, err = SeedUsersAndPosts()
+	_, _, _, err = SeedUsersCategoriesAndPosts()
 	if err != nil {
 		log.Fatalf("Error seeding user and post  table %v\n", err)
 	}
@@ -29,7 +29,7 @@ func TestFindAllPosts(t *testing.T) {
 
 func TestSavePost(t *testing.T) {
 
-	err := refreshUserAndPostTable()
+	err := refreshUserCategoryAndPostTable()
 	if err != nil {
 		log.Fatalf("Error user and post refreshing table %v\n", err)
 	}
@@ -39,11 +39,17 @@ func TestSavePost(t *testing.T) {
 		log.Fatalf("Cannot seed user %v\n", err)
 	}
 
+	category, err := seedOneCategory()
+	if err != nil {
+		log.Fatalf("Cannot seed user %v\n", err)
+	}
+
 	newPost := models.Post{
-		ID:       1,
-		Title:    "This is the title from testing",
-		Content:  "This is the content  from testing",
-		AuthorID: user.ID,
+		ID:         1,
+		Title:      "This is the title from testing",
+		Content:    "This is the content  from testing",
+		AuthorID:   user.ID,
+		CategoryID: category.ID,
 	}
 	savedPost, err := newPost.SavePost(server.DB)
 	if err != nil {
@@ -54,16 +60,17 @@ func TestSavePost(t *testing.T) {
 	assert.Equal(t, newPost.Title, savedPost.Title)
 	assert.Equal(t, newPost.Content, savedPost.Content)
 	assert.Equal(t, newPost.AuthorID, savedPost.AuthorID)
+	assert.Equal(t, newPost.CategoryID, savedPost.CategoryID)
 
 }
 
 func TestGetPostByID(t *testing.T) {
 
-	err := refreshUserAndPostTable()
+	err := refreshUserCategoryAndPostTable()
 	if err != nil {
 		log.Fatalf("Error refreshing user and post table: %v\n", err)
 	}
-	post, err := seedOneUserAndOnePost()
+	post, err := seedOneUserOneCategoryAndOnePost()
 	if err != nil {
 		log.Fatalf("Error Seeding table")
 	}
@@ -79,19 +86,20 @@ func TestGetPostByID(t *testing.T) {
 
 func TestUpdateAPost(t *testing.T) {
 
-	err := refreshUserAndPostTable()
+	err := refreshUserCategoryAndPostTable()
 	if err != nil {
 		log.Fatalf("Error refreshing user and post table: %v\n", err)
 	}
-	post, err := seedOneUserAndOnePost()
+	post, err := seedOneUserOneCategoryAndOnePost()
 	if err != nil {
 		log.Fatalf("Error Seeding table")
 	}
 	postUpdate := models.Post{
-		ID:       1,
-		Title:    "Modify title",
-		Content:  "Modify content",
-		AuthorID: post.AuthorID,
+		ID:         1,
+		Title:      "Modify title",
+		Content:    "Modify content",
+		AuthorID:   post.AuthorID,
+		CategoryID: post.CategoryID,
 	}
 	updatedPost, err := postUpdate.UpdatePost(server.DB)
 	if err != nil {
@@ -102,15 +110,16 @@ func TestUpdateAPost(t *testing.T) {
 	assert.Equal(t, updatedPost.Title, postUpdate.Title)
 	assert.Equal(t, updatedPost.Content, postUpdate.Content)
 	assert.Equal(t, updatedPost.AuthorID, postUpdate.AuthorID)
+	assert.Equal(t, updatedPost.CategoryID, postUpdate.CategoryID)
 }
 
 func TestDeleteAPost(t *testing.T) {
 
-	err := refreshUserAndPostTable()
+	err := refreshUserCategoryAndPostTable()
 	if err != nil {
 		log.Fatalf("Error refreshing user and post table: %v\n", err)
 	}
-	post, err := seedOneUserAndOnePost()
+	post, err := seedOneUserOneCategoryAndOnePost()
 	if err != nil {
 		log.Fatalf("Error Seeding tables")
 	}

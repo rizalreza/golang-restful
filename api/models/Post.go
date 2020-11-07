@@ -58,6 +58,10 @@ func (p *Post) SavePost(db *gorm.DB) (*Post, error) {
 		if err != nil {
 			return &Post{}, err
 		}
+		err = db.Debug().Model(&Category{}).Where("id = ?", p.CategoryID).Take(&p.Category).Error
+		if err != nil {
+			return &Post{}, err
+		}
 	}
 	return p, nil
 }

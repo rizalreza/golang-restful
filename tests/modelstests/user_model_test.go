@@ -77,9 +77,9 @@ func TestUpdateUser(t *testing.T) {
 }
 
 func TestDeleteUser(t *testing.T) {
-	err := refreshUserAndPostTable()
+	err := refreshUserCategoryAndPostTable()
 	if err != nil {
-		log.Fatalf("Error when refreshUserAndPostTable: %v\n", err)
+		log.Fatalf("Error when refreshUserCategoryAndPostTable: %v\n", err)
 		// log.Fatal(err)
 	}
 

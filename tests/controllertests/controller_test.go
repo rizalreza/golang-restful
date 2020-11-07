@@ -14,6 +14,7 @@ import (
 
 var server = controllers.Server{}
 var userInstance = models.User{}
+var categortInstance = models.Category{}
 var postInstance = models.Post{}
 
 func TestMain(m *testing.M) {
@@ -71,6 +72,24 @@ func refreshUserTable() error {
 	return nil
 }
 
+func refreshCategoryTable() error {
+	server.DB.Exec("SET foreign_key_checks=0")
+	err := server.DB.DropTableIfExists(&models.Category{}).Error
+	if err != nil {
+		return err
+	}
+
+	server.DB.Exec("SET foreign_key_checks=1")
+	err = server.DB.AutoMigrate(&models.Category{}).Error
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Successfully refreshed categories table")
+	log.Printf("refreshCategoryTable routine OK !!!")
+	return nil
+}
+
 func seedOneUser() (models.User, error) {
 
 	err := refreshUserTable()
@@ -89,6 +108,22 @@ func seedOneUser() (models.User, error) {
 		return models.User{}, err
 	}
 	return user, nil
+}
+
+func seedOneCategory() (models.Category, error) {
+	_ = refreshCategoryTable()
+
+	category := models.Category{
+		Name: "Category 1",
+	}
+
+	err := server.DB.Model(&models.Category{}).Create(&category).Error
+	if err != nil {
+		log.Fatalf("Cannot seed categories table: %v", err)
+	}
+
+	log.Printf("seedOneCategory routine OK !!!")
+	return category, nil
 }
 
 func seedUsers() ([]models.User, error) {
@@ -118,23 +153,26 @@ func seedUsers() ([]models.User, error) {
 	return users, nil
 }
 
-func refreshUserAndPostTable() error {
-
-	err := server.DB.DropTableIfExists(&models.User{}, &models.Post{}).Error
+func refreshUserCategoryAndPostTable() error {
+	server.DB.Exec("SET foreign_key_checks=0")
+	err := server.DB.Debug().DropTableIfExists(&models.Post{}, &models.Category{}, &models.User{}).Error
 	if err != nil {
 		return err
 	}
-	err = server.DB.AutoMigrate(&models.User{}, &models.Post{}).Error
+
+	server.DB.Exec("SET foreign_key_checks=1")
+	err = server.DB.Debug().AutoMigrate(&models.User{}, &models.Category{}, &models.Post{}).Error
 	if err != nil {
 		return err
 	}
 	log.Printf("Successfully refreshed tables")
+	log.Printf("refreshUserCategoryAndPostTable routine OK !!!")
 	return nil
 }
 
-func seedOneUserAndOnePost() (models.Post, error) {
+func seedOneUserOneCategoryAndOnePost() (models.Post, error) {
 
-	err := refreshUserAndPostTable()
+	err := refreshUserCategoryAndPostTable()
 	if err != nil {
 		return models.Post{}, err
 	}
@@ -148,10 +186,21 @@ func seedOneUserAndOnePost() (models.Post, error) {
 	if err != nil {
 		return models.Post{}, err
 	}
+
+	category := models.Category{
+		Name: "Category Test 1",
+	}
+
+	err = server.DB.Model(&models.Category{}).Create(&category).Error
+	if err != nil {
+		return models.Post{}, err
+	}
+
 	post := models.Post{
-		Title:    "This is the title sam",
-		Content:  "This is the content sam",
-		AuthorID: user.ID,
+		Title:      "This is the title sam",
+		Content:    "This is the content sam",
+		AuthorID:   user.ID,
+		CategoryID: category.ID,
 	}
 	err = server.DB.Model(&models.Post{}).Create(&post).Error
 	if err != nil {
@@ -160,33 +209,41 @@ func seedOneUserAndOnePost() (models.Post, error) {
 	return post, nil
 }
 
-func seedUsersAndPosts() ([]models.User, []models.Post, error) {
-
+func SeedUsersCategoriesAndPosts() ([]models.User, []models.Category, []models.Post, error) {
 	var err error
 
 	if err != nil {
-		return []models.User{}, []models.Post{}, err
+		return []models.User{}, []models.Category{}, []models.Post{}, err
 	}
+
 	var users = []models.User{
 		models.User{
-			Username: "john",
-			Email:    "john@gmail.com",
+			Username: "mike",
+			Email:    "mike@gmail.com",
 			Password: "password",
 		},
 		models.User{
-			Username: "doe",
-			Email:    "doe@gmail.com",
+			Username: "shinoda",
+			Email:    "shinoda@gmail.com",
 			Password: "password",
+		},
+	}
+	var categories = []models.Category{
+		models.Category{
+			Name: "Category Test 1",
+		},
+		models.Category{
+			Name: "Category Test 2",
 		},
 	}
 	var posts = []models.Post{
 		models.Post{
-			Title:   "Title 1",
-			Content: "Hello world 1",
+			Title:   "First Title",
+			Content: "First Content",
 		},
 		models.Post{
-			Title:   "Title 2",
-			Content: "Hello world 2",
+			Title:   "Second Title",
+			Content: "Second Content",
 		},
 	}
 
@@ -195,12 +252,19 @@ func seedUsersAndPosts() ([]models.User, []models.Post, error) {
 		if err != nil {
 			log.Fatalf("cannot seed users table: %v", err)
 		}
+
+		err = server.DB.Model(&models.Category{}).Create(&categories[i]).Error
+		if err != nil {
+			log.Fatalf("cannot seed categories table: %v", err)
+		}
+
 		posts[i].AuthorID = users[i].ID
+		posts[i].CategoryID = categories[i].ID
 
 		err = server.DB.Model(&models.Post{}).Create(&posts[i]).Error
 		if err != nil {
-			log.Fatalf("cannot seed posts table: %v", err)
+			log.Fatalf("cannot seed users table: %v", err)
 		}
 	}
-	return users, posts, nil
+	return users, categories, posts, nil
 }
